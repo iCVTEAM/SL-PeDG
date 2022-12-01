@@ -1,0 +1,119 @@
+INPUT:
+  SIZE_TRAIN: [256, 128]
+  SIZE_TEST: [256, 128]
+
+  AUTOAUG:
+    ENABLED: False
+    PROB: 0.1
+
+  REA:
+    ENABLED: False
+    PROB: 0.5
+
+  FLIP:
+    ENABLED: True
+    PROB: 0.5
+
+  PADDING:
+    ENABLED: True
+    SIZE: 10
+
+
+MODEL:
+  META_ARCHITECTURE: Baseline
+  FREEZE_LAYERS: [ backbone ]
+  BACKBONE:
+    NAME: build_resnet_backbone
+    NORM: BN
+    DEPTH: 50x
+    LAST_STRIDE: 1
+    FEAT_DIM: 2048
+    PRETRAIN: True
+    WITH_IBN: True
+    WITH_NL: False
+    PRETRAIN_PATH: ./pretrain/resnet50_ibn_a-d9d0bb7b.pth
+
+  HEADS:
+    NAME: EmbeddingHead
+    EMBEDDING_DIM: 0
+    NORM: BN
+    WITH_BNNECK: True
+    NECK_FEAT: before
+    CLS_LAYER: Linear
+    POOL_LAYER: GlobalAvgPool
+    SCALE: 64
+    MARGIN: 0.35
+
+  LOSSES:
+    NAME: ('CrossEntropyLoss',)
+    CE:
+      EPSILON: 0.1
+      SCALE: 1.0
+
+
+SOLVER:
+  AMP:
+    ENABLED: False
+  OPT: DropoutSGD
+  NESTEROV: True
+  BASE_LR: 0.01
+  BIAS_LR_FACTOR: 1.
+  HEADS_LR_FACTOR: 1.
+  HEADS_FC_LR_FACTOR: 10.
+  WEIGHT_DECAY: 0.0005
+  WEIGHT_DECAY_BIAS: 0.0005
+  ETA_MIN_LR: 7.7e-5
+
+  IMS_PER_BATCH: 64
+  MAX_EPOCH: 70
+  WARMUP_ITERS: 20000
+  FREEZE_ITERS: 20000
+  WARMUP_FACTOR: 0.1
+
+  SCHED: MultiStepLR
+  STEPS: [ 40, 80 ]
+  GAMMA: 0.1
+
+  CHECKPOINT_PERIOD: 10
+
+  DROPOUTSGD:
+    HOOK: True
+    LAYER_NAMES: [['backbone.conv1', 'backbone.bn1'], ['backbone.layer1',], ['backbone.layer2',],
+                      ['backbone.layer3',], ['backbone.layer4',], ['heads',]]
+    P_PROB: 0.5
+    UPDATE_EPOCHS: 5
+    BEGIN_LAYER: 0
+    END_LAYER: 6
+    STEP: 2
+    WINDOW_SIZE: 2
+    OPEN_ITERS: 20000
+
+
+DATALOADER:
+  SAMPLER_TRAIN: DomainSplitBalancedSampler
+  NUM_INSTANCE: 2
+  NUM_WORKERS: 8
+  DATASET_LEN: 130000
+
+  DOMAIN_SHUFFLE: False
+  NUM_SRC_DOMAINS: 3
+  NUM_TRG_DOMAINS: 1
+  DOMAIN_STEP: 2
+
+
+DATASETS:
+  NAMES: ('DG_CUHK03_detected', 'DG_Market1501', 'DG_DukeMTMC', 'DG_MSMT17',)
+  TESTS: ('DG_VIPER_only_10', 'DG_PRID',  'DG_GRID', 'DG_ILIDS', )
+
+
+TEST:
+  EVAL_PERIOD: 10
+  IMS_PER_BATCH: 128
+
+
+CUDNN_BENCHMARK: False
+
+SEED: 0
+
+
+OUTPUT_DIR: logs/dg/baseline
