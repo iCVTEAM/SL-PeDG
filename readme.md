@@ -1,4 +1,6 @@
-This repository contains PyTorch codes for the ACM MM 2022 paper "[**Revisiting Stochastic Learning for Generalizable Person Re-identification**](https://dl.acm.org/doi/abs/10.1145/3503161.3547812)"
+This repository contains PyTorch codes for the ACM MM 2022 paper "[**Revisiting Stochastic Learning for Generalizable Person Re-identification**](https://dl.acm.org/doi/abs/10.1145/3503161.3547812)"  
+
+Paper [Links](http://cvteam.buaa.edu.cn/papers/2022-ACMMM.pdf) from [CVTEAM](http://cvteam.buaa.edu.cn/) webpage
 
 ## Set up with Conda
 ```
